@@ -235,6 +235,7 @@ public class Segment implements CharSequence {
 		ArrayList<Segment> matchList = new ArrayList<>();
 		Matcher m = p.matcher(value);
 
+		Segment lastMatch = null;
 		// Add segments before each match found
 		while (m.find()) {
 			if (!matchLimited || matchList.size() < limit - 1) {
@@ -243,11 +244,13 @@ public class Segment implements CharSequence {
 					// at the beginning of the input char sequence.
 					continue;
 				}
-				Segment match = substring(index, m.start());
+				Segment match = substring(lastMatch, index, m.start());
+				lastMatch = match;
 				matchList.add(match);
 				index = m.end();
 			} else if (matchList.size() == limit - 1) { // last one
-				Segment match = substring(index, value.length());
+				Segment match = substring(lastMatch, index, value.length());
+				lastMatch = match;
 				matchList.add(match);
 				index = m.end();
 			}
@@ -260,7 +263,8 @@ public class Segment implements CharSequence {
 
 		// Add remaining segment
 		if (!matchLimited || matchList.size() < limit) {
-			matchList.add(substring(index, value.length()));
+			Segment match = substring(lastMatch, index, value.length());
+			matchList.add(match);
 		}
 
 		// Construct result
@@ -380,6 +384,26 @@ public class Segment implements CharSequence {
 				value.substring(beginIndex, endIndex), source, newStartLine, newStartCol);
 	}
 
+	Segment substring(Segment beforeSegment, int startIndex, int endIndex) {
+		if (beforeSegment == null) {
+			return substring(startIndex, endIndex);
+		}
+		int thisSourceIndex = sourceIndex != null ? sourceIndex : 0;
+		int sourceIndex = thisSourceIndex + startIndex;
+		int startLine = beforeSegment.startLine;
+		int startCol = beforeSegment.startCol;
+		Matcher m = LINE_BREAK.matcher(value);
+		m.region(beforeSegment.sourceIndex - thisSourceIndex, startIndex);
+		while (m.find()) {
+			startLine++;
+			startCol = startIndex - m.end();
+		}
+
+		return new Segment(sourceSegment != null ? sourceSegment : this, sourceIndex,
+				value.substring(startIndex, endIndex),
+				source, startLine, startCol);
+	}
+
 	public char[] toCharArray() {
 		return value.toCharArray();
 	}
@@ -409,7 +433,7 @@ public class Segment implements CharSequence {
 	 */
 	public String underlineInContext() {
 		StringBuilder sb = new StringBuilder();
-		Segment[] lines = sourceSegment == null ? this.split("\r\n|\r|\n") : sourceSegment.split("\r\n|\r|\n");
+		Segment[] lines = sourceSegment == null ? this.split(LINE_BREAK) : sourceSegment.split("\r\n|\r|\n");
 
 		for (Segment line : lines) {
 			if (line.startLine < startLine || line.startLine > endLine) {
