@@ -188,6 +188,10 @@ public class Segment implements CharSequence {
 		return value.isEmpty();
 	}
 
+	/**
+	 * @return a Segment representing the same region of text, but without a
+	 *         reference to this Segment's {@link #sourceSegment} (if any).
+	 */
 	public Segment isolate() {
 		return new Segment(null, null, value, source, startLine, startCol);
 	}
