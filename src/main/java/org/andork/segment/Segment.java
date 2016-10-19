@@ -193,7 +193,7 @@ public class Segment implements CharSequence {
 	 *         reference to this Segment's {@link #sourceSegment} (if any).
 	 */
 	public Segment isolate() {
-		return new Segment(null, null, value, source, startLine, startCol);
+		return new Segment(value, source, startLine, startCol);
 	}
 
 	public int lastIndexOf(int ch) {
@@ -441,7 +441,18 @@ public class Segment implements CharSequence {
 	 */
 	public String underlineInContext() {
 		StringBuilder sb = new StringBuilder();
-		Segment[] lines = sourceSegment == null ? this.split(LINE_BREAK) : sourceSegment.split("\r\n|\r|\n");
+		Segment context = this;
+		if (sourceSegment != null) {
+			// beginning of this segment's first line
+			int start = sourceIndex - startCol;
+			SegmentMatcher matcher = new SegmentMatcher(sourceSegment, LINE_BREAK);
+			matcher.region(sourceIndex + length() - endCol, sourceSegment.length());
+			// end of this segment's last line
+			int end = matcher.find() ? matcher.start() : sourceSegment.length();
+			// full lines containing this segment
+			context = new Segment(sourceSegment.value.substring(start, end), source, startLine, 0);
+		}
+		Segment[] lines = context.split(LINE_BREAK);
 
 		for (Segment line : lines) {
 			if (line.startLine < startLine || line.startLine > endLine) {
