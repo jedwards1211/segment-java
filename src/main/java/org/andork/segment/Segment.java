@@ -188,6 +188,10 @@ public class Segment implements CharSequence {
 		return value.isEmpty();
 	}
 
+	public Segment isolate() {
+		return new Segment(null, null, value, source, startLine, startCol);
+	}
+
 	public int lastIndexOf(int ch) {
 		return value.lastIndexOf(ch);
 	}
