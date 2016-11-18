@@ -8,7 +8,6 @@ public class SegmentParser {
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	private static final Pattern NONWHITESPACE = Pattern.compile("\\S+");
 	private static final Pattern BIG_DECIMAL_STRING = Pattern.compile("[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?");
-
 	public static Function<SegmentParser, String> missingOrInvalid(String what) {
 		return p -> (p.atEnd() ? "missing " : "invalid ") + what;
 	}
