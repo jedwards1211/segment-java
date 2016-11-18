@@ -12,7 +12,6 @@ public class SegmentParser {
 	public int index = 0;
 
 	public SegmentParser(Segment segment) {
-		super();
 		this.segment = segment;
 	}
 
@@ -27,6 +26,10 @@ public class SegmentParser {
 		return index >= segment.length();
 	}
 
+	public BigDecimal bigDecimal() throws SegmentParseException {
+		return bigDecimal("invalid number");
+	}
+
 	public BigDecimal bigDecimal(String errorMessage) throws SegmentParseException {
 		Segment segment = match(BIG_DECIMAL_STRING, errorMessage);
 		try {
@@ -34,6 +37,10 @@ public class SegmentParser {
 		} catch (Exception ex) {
 			throw new SegmentParseException(errorMessage, segment);
 		}
+	}
+
+	public SegmentParser character(char c) throws SegmentParseException {
+		return character(c, "expected '" + c + "'");
 	}
 
 	public SegmentParser character(char c, String errorMessage) throws SegmentParseException {
@@ -89,12 +96,26 @@ public class SegmentParser {
 		return this;
 	}
 
+	public Segment nonwhitespace() throws SegmentParseException {
+		return nonwhitespace("expected non-whitespace");
+	}
+
 	public Segment nonwhitespace(String errorMessage) throws SegmentParseException {
 		return match(NONWHITESPACE, errorMessage);
 	}
 
-	public void throwError(String message) throws SegmentParseException {
+	public Segment rest() {
+		Segment result = segment.substring(index);
+		index = segment.length();
+		return result;
+	}
+
+	public void throwException(String message) throws SegmentParseException {
 		throw new SegmentParseException(message, segment.charAtAsSegment(index));
+	}
+
+	public SegmentParser whitespace() throws SegmentParseException {
+		return whitespace("expected whitespace");
 	}
 
 	public SegmentParser whitespace(String errorMessage) throws SegmentParseException {
