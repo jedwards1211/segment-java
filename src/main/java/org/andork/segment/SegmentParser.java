@@ -1,6 +1,7 @@
 package org.andork.segment;
 
 import java.math.BigDecimal;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class SegmentParser {
@@ -8,7 +9,12 @@ public class SegmentParser {
 	private static final Pattern NONWHITESPACE = Pattern.compile("\\S+");
 	private static final Pattern BIG_DECIMAL_STRING = Pattern.compile("[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?");
 
+	public static Function<SegmentParser, String> missingOrInvalid(String what) {
+		return p -> (p.atEnd() ? "missing " : "invalid ") + what;
+	}
+
 	private final Segment segment;
+
 	public int index = 0;
 
 	public SegmentParser(Segment segment) {
@@ -30,34 +36,46 @@ public class SegmentParser {
 		return bigDecimal("invalid number");
 	}
 
-	public BigDecimal bigDecimal(String errorMessage) throws SegmentParseException {
+	public BigDecimal bigDecimal(Function<SegmentParser, String> errorMessage) throws SegmentParseException {
 		Segment segment = match(BIG_DECIMAL_STRING, errorMessage);
 		try {
 			return new BigDecimal(segment.toString());
 		} catch (Exception ex) {
-			throw new SegmentParseException(errorMessage, segment);
+			throw new SegmentParseException(errorMessage.apply(this), ex, segment);
 		}
+	}
+
+	public BigDecimal bigDecimal(String errorMessage) throws SegmentParseException {
+		return bigDecimal(p -> errorMessage);
 	}
 
 	public SegmentParser character(char c) throws SegmentParseException {
 		return character(c, "expected '" + c + "'");
 	}
 
-	public SegmentParser character(char c, String errorMessage) throws SegmentParseException {
+	public SegmentParser character(char c, Function<SegmentParser, String> errorMessage) throws SegmentParseException {
 		if (index >= segment.length() || segment.charAt(index) != c) {
-			throw new SegmentParseException(errorMessage,
+			throw new SegmentParseException(errorMessage.apply(this),
 					segment.charAtAsSegment(index));
 		}
 		index++;
 		return this;
 	}
 
-	public char character(String errorMessage) throws SegmentParseException {
+	public SegmentParser character(char c, String errorMessage) throws SegmentParseException {
+		return character(c, p -> errorMessage);
+	}
+
+	public char character(Function<SegmentParser, String> errorMessage) throws SegmentParseException {
 		if (index >= segment.length()) {
-			throw new SegmentParseException(errorMessage,
+			throw new SegmentParseException(errorMessage.apply(this),
 					segment.charAtAsSegment(index));
 		}
 		return segment.charAt(index++);
+	}
+
+	public char character(String errorMessage) throws SegmentParseException {
+		return character(p -> errorMessage);
 	}
 
 	public char charAtIndex() {
@@ -72,14 +90,22 @@ public class SegmentParser {
 		return segment;
 	}
 
-	public Segment match(Pattern p, String errorMessage) throws SegmentParseException {
+	public Segment match(Pattern p, Function<SegmentParser, String> errorMessage) throws SegmentParseException {
 		SegmentMatcher m = new SegmentMatcher(segment, p);
 		m.region(index, segment.length());
 		if (!m.find() || m.start() > index) {
-			throw new SegmentParseException(errorMessage, segment.charAtAsSegment(index));
+			throw new SegmentParseException(errorMessage.apply(this), segment.charAtAsSegment(index));
 		}
 		index = m.end();
 		return m.group();
+	}
+
+	public Segment match(Pattern p, String errorMessage) throws SegmentParseException {
+		return match(p, p2 -> errorMessage);
+	}
+
+	public Segment match(String pattern, Function<SegmentParser, String> errorMessage) throws SegmentParseException {
+		return match(Pattern.compile(pattern), errorMessage);
 	}
 
 	public Segment match(String pattern, String errorMessage) throws SegmentParseException {
