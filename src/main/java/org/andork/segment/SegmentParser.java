@@ -126,8 +126,12 @@ public class SegmentParser {
 		return nonwhitespace("expected non-whitespace");
 	}
 
-	public Segment nonwhitespace(String errorMessage) throws SegmentParseException {
+	public Segment nonwhitespace(Function<SegmentParser, String> errorMessage) throws SegmentParseException {
 		return match(NONWHITESPACE, errorMessage);
+	}
+
+	public Segment nonwhitespace(String errorMessage) throws SegmentParseException {
+		return nonwhitespace(p -> errorMessage);
 	}
 
 	public Segment rest() {
