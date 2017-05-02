@@ -19,7 +19,7 @@ public class Segment implements CharSequence {
 
 	private final String value;
 	public final Object source;
-	public final Integer sourceIndex;
+	public final int sourceIndex;
 	public final Segment sourceSegment;
 	public final int startLine;
 	public final int endLine;
@@ -31,7 +31,7 @@ public class Segment implements CharSequence {
 	 */
 	public final int endCol;
 
-	protected Segment(Segment sourceSegment, Integer sourceIndex, String value, Object source, int startLine,
+	protected Segment(Segment sourceSegment, int sourceIndex, String value, Object source, int startLine,
 			int startCol) {
 		super();
 		this.sourceSegment = sourceSegment;
@@ -65,11 +65,11 @@ public class Segment implements CharSequence {
 	}
 
 	public Segment(String value, Object source, int startLine, int startCol) {
-		this(null, null, value, source, startLine, startCol);
+		this(null, -1, value, source, startLine, startCol);
 	}
 
 	public Segment charAfter() {
-		return sourceIndex == null || sourceIndex + length() >= sourceSegment.length() ? substring(length())
+		return sourceIndex < 0 || sourceIndex + length() >= sourceSegment.length() ? substring(length())
 				: sourceSegment.substring(sourceIndex + length(), sourceIndex + length() + 1);
 	}
 
@@ -90,7 +90,7 @@ public class Segment implements CharSequence {
 	}
 
 	public Segment charBefore() {
-		return sourceIndex == null || sourceIndex == 0 ? substring(0, 0)
+		return sourceIndex < 0 || sourceIndex == 0 ? substring(0, 0)
 				: sourceSegment.substring(sourceIndex - 1, sourceIndex);
 	}
 
@@ -366,7 +366,7 @@ public class Segment implements CharSequence {
 	public Segment substring(int beginIndex, int endIndex) {
 		if (startLine == endLine) {
 			return new Segment(sourceSegment != null ? sourceSegment : this,
-					sourceIndex != null ? sourceIndex + beginIndex : beginIndex,
+					sourceIndex >= 0 ? sourceIndex + beginIndex : beginIndex,
 					value.substring(beginIndex, endIndex), source, startLine,
 					startCol + beginIndex, startLine, startCol + endIndex - 1);
 		}
@@ -388,7 +388,7 @@ public class Segment implements CharSequence {
 		}
 
 		return new Segment(sourceSegment != null ? sourceSegment : this,
-				sourceIndex != null ? sourceIndex + beginIndex : beginIndex,
+				sourceIndex >= 0 ? sourceIndex + beginIndex : beginIndex,
 				value.substring(beginIndex, endIndex), source, newStartLine, newStartCol);
 	}
 
@@ -396,7 +396,7 @@ public class Segment implements CharSequence {
 		if (beforeSegment == null) {
 			return substring(startIndex, endIndex);
 		}
-		int thisSourceIndex = sourceIndex != null ? sourceIndex : 0;
+		int thisSourceIndex = sourceIndex >= 0 ? sourceIndex : 0;
 		int sourceIndex = thisSourceIndex + startIndex;
 		int startLine = beforeSegment.startLine;
 		int startCol = beforeSegment.startCol;
