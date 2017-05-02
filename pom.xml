@@ -7,16 +7,16 @@
   <description>handy utility for capturing parse error locations</description>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/main/test</testSourceDirectory>
-    <testResources>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
+	<testResources>
       <testResource>
-        <directory>src/main/test</directory>
+        <directory>src/test/resources</directory>
         <excludes>
           <exclude>**/*.java</exclude>
         </excludes>
       </testResource>
     </testResources>
-    <plugins>
+	<plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
