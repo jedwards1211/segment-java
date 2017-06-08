@@ -462,7 +462,10 @@ public class Segment implements CharSequence {
 			int k = 0;
 			if (startLine == line.startLine) {
 				while (k < startCol) {
-					sb.append(' ');
+					// use the character from line if it's whitespace
+					// so that we get tabs in the same place before the underline
+					char c = line.charAt(k);
+					sb.append(Character.isWhitespace(c) ? c : ' ');
 					k++;
 				}
 			}
