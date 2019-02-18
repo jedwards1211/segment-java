@@ -1,7 +1,11 @@
 package org.andork.segment;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,6 +70,15 @@ public class Segment implements CharSequence {
 
 	public Segment(String value, Object source, int startLine, int startCol) {
 		this(null, -1, value, source, startLine, startCol);
+	}
+	
+	public static Segment readFile(String file, Charset encoding) throws IOException {
+		return readFile(Paths.get(file), encoding);
+	}
+	
+	public static Segment readFile(Path path, Charset encoding) throws IOException {
+		byte[] bytes = Files.readAllBytes(path);
+		return new Segment(new String(bytes, encoding), path, 0, 0);
 	}
 
 	public Segment charAfter() {
