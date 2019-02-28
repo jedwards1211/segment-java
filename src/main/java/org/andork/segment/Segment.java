@@ -397,7 +397,7 @@ public class Segment implements CharSequence {
 		}
 
 		int newStartLine = lastSubstringLine;
-		int newStartCol = lastSubstringCol;
+		int newStartCol = lastSubstringCol + beginIndex - lastSubstringIndex;
 
 		int toIndex = beginIndex;
 		if (toIndex < value.length() && toIndex > 0 && value.charAt(toIndex) == '\n'

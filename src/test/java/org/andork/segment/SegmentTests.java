@@ -2,6 +2,7 @@ package org.andork.segment;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -53,12 +54,12 @@ public class SegmentTests {
 
 		Segment[] parts;
 		parts = source.split("a");
-		assertArrayEquals(parts, new Segment[] {
-			source.substring(0, 5),
-			source.substring(6, 9),
-			source.substring(10, 26),
-			source.substring(27)
-		});
+		// go in reverse to kill a stateful optimization that was
+		// causing bugs
+		assertEquals(source.substring(27), parts[3]);
+		assertEquals(source.substring(10, 26), parts[2]);
+		assertEquals(source.substring(6, 9), parts[1]);
+		assertEquals(source.substring(0, 5), parts[0]);
 		
 
 		parts = source.split("a", 2);
