@@ -34,6 +34,9 @@ public class Segment implements CharSequence {
 	 * negative).
 	 */
 	public final int endCol;
+	private int lastSubstringIndex;
+	private int lastSubstringLine;
+	private int lastSubstringCol;
 
 	protected Segment(Segment sourceSegment, int sourceIndex, String value, Object source, int startLine,
 			int startCol) {
@@ -53,6 +56,9 @@ public class Segment implements CharSequence {
 		}
 		this.endLine = endLine;
 		this.endCol = endCol;
+		this.lastSubstringIndex = 0;
+		this.lastSubstringLine = startLine;
+		this.lastSubstringCol = startCol;
 	}
 
 	protected Segment(Segment sourceSegment, Integer sourceIndex, String value, Object source, int startLine,
@@ -383,9 +389,15 @@ public class Segment implements CharSequence {
 					value.substring(beginIndex, endIndex), source, startLine,
 					startCol + beginIndex, startLine, startCol + endIndex - 1);
 		}
+		
+		if (beginIndex < lastSubstringIndex) {
+			lastSubstringIndex = 0;
+			lastSubstringLine = startLine;
+			lastSubstringCol = startCol;
+		}
 
-		int newStartLine = startLine;
-		int newStartCol = startCol + beginIndex;
+		int newStartLine = lastSubstringLine;
+		int newStartCol = lastSubstringCol;
 
 		int toIndex = beginIndex;
 		if (toIndex < value.length() && toIndex > 0 && value.charAt(toIndex) == '\n'
@@ -393,11 +405,14 @@ public class Segment implements CharSequence {
 			toIndex--;
 		}
 
-		Matcher m = LINE_BREAK.matcher(value).region(0, toIndex);
+		Matcher m = LINE_BREAK.matcher(value).region(lastSubstringIndex, toIndex);
 
 		while (m.find()) {
 			newStartLine++;
 			newStartCol = beginIndex - m.end();
+			lastSubstringIndex = m.end();
+			lastSubstringLine++;
+			lastSubstringCol = 0;
 		}
 
 		return new Segment(sourceSegment != null ? sourceSegment : this,
